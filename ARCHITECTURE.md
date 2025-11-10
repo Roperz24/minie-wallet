@@ -159,7 +159,7 @@ The Mini Wallet Service is a production-grade Web3 wallet management system buil
 ## GraphQL API Reference
 
 ### Queries
-```graphql
+\`\`\`graphql
 query GetMe {
   me {
     id

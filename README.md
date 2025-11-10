@@ -76,7 +76,7 @@ npm test:watch
 
 ## GraphQL Queries
 
-```graphql
+\`\`\`graphql
 # Get user info
 query {
   me {
