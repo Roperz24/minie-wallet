@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                    String      @id @default(cuid())
+  email                 String      @unique
+  passwordHash          String
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  wallets               Wallet[]
+  transactions          Transaction[]
+  ipfsFiles             IpfsFile[]
+}
+
+model Wallet {
+  id                    String      @id @default(cuid())
+  userId                String
+  user                  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  address               String      @unique
+  name                  String
+  encryptedPrivateKey   String
+  publicKey             String
+  balance               String      @default("0")
+  network               String      @default("sepolia")
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  transactions          Transaction[]
+
+  @@index([userId])
+  @@index([address])
+}
+
+model Transaction {
+  id                    String      @id @default(cuid())
+  walletId              String
+  wallet                Wallet      @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  userId                String
+  user                  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type                  String      @db.VarChar(50)
+  fromAddress           String
+  toAddress             String
+  amount                String
+  gasPrice              String
+  gasLimit              String
+  transactionHash       String?
+  status                String      @default("pending")
+  ipfsHash              String?
+  ipfsFile              IpfsFile?   @relation("TransactionIpfs")
+  metadata              String?     @db.Text
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  @@index([walletId])
+  @@index([userId])
+  @@index([transactionHash])
+}
+
+model IpfsFile {
+  id                    String      @id @default(cuid())
+  userId                String
+  user                  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ipfsHash              String      @unique
+  fileName              String
+  fileSize              Int
+  mimeType              String
+  transactionId         String?     @unique
+  transaction           Transaction? @relation("TransactionIpfs", fields: [transactionId], references: [id])
+  createdAt             DateTime    @default(now())
+
+  @@index([userId])
+  @@index([ipfsHash])
+}
+
+model ApiKey {
+  id                    String      @id @default(cuid())
+  key                   String      @unique
+  name                  String
+  userId                String?
+  isActive              Boolean     @default(true)
+  lastUsed              DateTime?
+  createdAt             DateTime    @default(now())
+  expiresAt             DateTime?
+}
